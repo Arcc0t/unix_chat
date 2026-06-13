@@ -1,6 +1,8 @@
 #ifndef DEFINES_H_GUARD
 #define DEFINES_H_GUARD
 
+#include <stddef.h>
+
 #define TO_BOOL(x) (!!(x))
 
 #ifndef NULL

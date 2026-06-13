@@ -1,7 +1,9 @@
 #include "parser.h"
-#include <cstype.h>
+#include <ctype.h>
 #include <errno.h>
 #include "defines.h"
+#include <stdlib.h>
+#include <string.h>
 #include <stddef.h>
 #include <limits.h>
 
@@ -48,7 +50,7 @@ static size_t
 len_before_space(const char *str)
 {
 	size_t len = 0;
-	while (str[len] && !is_space(str[len]))
+	while (str[len] && !isspace(str[len]))
 		len++;
 	return len;
 }
@@ -56,7 +58,7 @@ len_before_space(const char *str)
 static char *
 skip_spaces(const char *str)
 {
-	while (*str && is_space(*str))
+	while (*str && isspace(*str))
 		++str;
 	return (char *) str;
 }
@@ -72,7 +74,7 @@ parse_field(enum field_type type, const char *content, struct message *out)
 			return parse_id(content, &out->reply_id);
 		case FIELD_USERNAME:
 			content = skip_spaces(content);
-			len = len_before_space(str); 
+			len = len_before_space(content); 
 			if (len == 0 || len >= USERNAME_MAXLEN)
 				return FALSE;
 			memcpy(out->username, content, len); 
@@ -90,14 +92,14 @@ parse_field(enum field_type type, const char *content, struct message *out)
 
 BOOL parse(const char *str, size_t len, struct message *output)
 {
-	uLong bitmask = 0;	/*currently parsed fields*/ 
-	sc_bitmask;		/*server-client fields required */ 
-	cs_bitmask = 0;		/*client-server fields required */
+	uLong bitmask = 0;		/*currently parsed fields*/ 
+	uLong sc_bitmask;		/*server-client fields required */ 
+	uLong cs_bitmask = 0;		/*client-server fields required */
 	char *data_begin, *data;
 	char *newline;
 	char *colon;
 	int field;
-	size_t len;
+	size_t body_len;
 
 	/* setting bitmasks up */
 	BITMASK_SET(cs_bitmask, FIELD_BODY);
@@ -127,7 +129,7 @@ BOOL parse(const char *str, size_t len, struct message *output)
 		if (!colon)
 			goto err;
 
-		field = get_field_type(data, colon, colon);
+		field = get_field_type(data, colon);
 		if (field < 0 || BITMASK_GET(bitmask, field))
 			goto err;	
 
@@ -148,11 +150,11 @@ BOOL parse(const char *str, size_t len, struct message *output)
 	else 
 		goto err;	
 
-	len = strlen(data);
-	if (len >= BODY_MAXLEN) /*silencely truncating */
-		len = BODY_MAXLEN - 1;	
+	body_len = strlen(data);
+	if (body_len >= BODY_MAXLEN) /*sibody_lencely truncating */
+		body_len = BODY_MAXLEN - 1;	
 	
-	memcpy(output->body, data, len);
+	memcpy(output->body, data, body_len);
 	free(data_begin);
 	return TRUE;
 
