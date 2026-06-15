@@ -18,6 +18,7 @@ struct message {
 	int id;
 	int reply_id;
 	char username[USERNAME_MAXLEN];
+	int body_len;
 	char body[BODY_MAXLEN];
 };
 
