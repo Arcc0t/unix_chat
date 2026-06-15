@@ -1,5 +1,6 @@
 #ifndef IOBUF_H_GUARD
 #define IOBUF_H_GUARD
+#include <stdlib.h>
 #include "defines.h"
 #include <sys/types.h>
 
