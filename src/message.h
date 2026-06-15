@@ -7,6 +7,7 @@ enum field_type {
 	FIELD_ID = 0,
 	FIELD_REPLY_ID,
 	FIELD_USERNAME,
+	FIELD_BODY_LENGTH,
 	FIELD_BODY,
 	FIELD_COUNT /* number of fields overall */
 };
@@ -18,7 +19,7 @@ struct message {
 	int id;
 	int reply_id;
 	char username[USERNAME_MAXLEN];
-	int body_len;
+	int body_length;
 	char body[BODY_MAXLEN];
 };
 
