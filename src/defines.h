@@ -7,6 +7,9 @@
 #define NULL ((void *) 0) 
 #endif /* NULL */
 
+#define MIN(X, Y) ((X) < (Y)? (X): (Y))
+#define MAX(X, Y) ((X) > (Y)? (X): (Y))
+
 typedef long long		Long;
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
