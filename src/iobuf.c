@@ -43,28 +43,22 @@ void transfer_buf_(IOBUF *buf)
 		buf->front[buf->front_size++] = buf->back[--buf->back_size];
 }
 
-iobuf_res iobuf_fread(IOBUF *buf, int fd)
+ssize_t iobuf_fread(IOBUF *buf, int fd)
 {
 	size_t to_read;
 	ssize_t bytes_read;
 
 	transfer_buf_(buf);
 	to_read = IOBUF_HALF_SIZE - buf->back_size;
-	while (to_read){
-		bytes_read = read(fd, buf->back + buf->back_size, to_read);
-		if (bytes_read < 0){
-			if (errno == EWOULDBLOCK)
-				return IOBUF_PARTIAL;
-			else 
-				return IOBUF_ERR;
-		}
-		if (bytes_read == 0)
-			return IOBUF_PARTIAL;
 
-		to_read -= bytes_read; 
-		buf->back_size += bytes_read;
-	}
-	return IOBUF_FULL;
+	bytes_read = read(fd, buf->back + buf->back_size, to_read);
+	if (bytes_read <= 0)
+		return bytes_read;
+	
+
+	buf->back_size += bytes_read;
+
+	return bytes_read;	
 
 }
 
@@ -73,20 +67,21 @@ size_t iobuf_read(IOBUF *ibuf, void *obuf, size_t obuf_size)
 	size_t bytes_read = 0;
 	size_t to_read;
 	char *obuf_ch = obuf;
-	iobuf_res err;
+	ssize_t fread_res;
+
+	/* buffer is empty */
+	if (ibuf->front_size == 0 && ibuf->back_size == 0){
+		/* nowhere to get new data */
+		if (ibuf->infd == -1)
+			return bytes_read;
+
+		/* otherwise */
+		fread_res = iobuf_fread(ibuf, ibuf->infd);
+		if (fread_res <= 0)
+			return bytes_read;			
+	}
 
 	while (obuf_size) { 
-		/* buffer is empty but we are not done yet */
-		if (ibuf->front_size == 0 && ibuf->back_size == 0){
-			/* nowhere to get new data */
-			if (ibuf->infd == -1)
-				return bytes_read;
-
-			/* otherwise */
-			err = iobuf_fread(ibuf, ibuf->infd);
-			if (err == IOBUF_ERR || err == IOBUF_PARTIAL)
-				return bytes_read;			
-		}
 		transfer_buf_(ibuf);
 		to_read = MIN(obuf_size, ibuf->front_size);
 		if (to_read == 0)
@@ -94,6 +89,7 @@ size_t iobuf_read(IOBUF *ibuf, void *obuf, size_t obuf_size)
 		while (to_read){
 			*obuf_ch++ = ibuf->front[--ibuf->front_size];
 			--obuf_size;
+			--to_read;
 		}
 	}
 	return bytes_read;
