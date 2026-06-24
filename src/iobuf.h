@@ -7,7 +7,7 @@
 typedef struct iobuf_ IOBUF;
 
 enum {IOBUF_NOFILE = -1};
-typedef enum {IOBUF_ERR = -1, IOBUF_FULL = 0, IOBUF_PARTIAL = 1} iobuf_res;
+typedef enum {IOBUF_ERR = -1, IOBUF_FULL = 0, IOBUF_PARTIAL = 1, IOBUF_EOF} iobuf_res;
 
 IOBUF *iobuf_create(int infd, int outfd);
 
