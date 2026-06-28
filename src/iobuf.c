@@ -1,4 +1,5 @@
 #include "iobuf.h"
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -72,7 +73,7 @@ size_t iobuf_read(IOBUF *ibuf, void *obuf, size_t obuf_size)
 	/* buffer is empty */
 	if (ibuf->front_size == 0 && ibuf->back_size == 0){
 		/* nowhere to get new data */
-		if (ibuf->infd == -1)
+		if (ibuf->infd == IOBUF_NOFILE)
 			return bytes_read;
 
 		/* otherwise */
@@ -93,4 +94,47 @@ size_t iobuf_read(IOBUF *ibuf, void *obuf, size_t obuf_size)
 		}
 	}
 	return bytes_read;
+}
+
+int iobuf_getchar(IOBUF *buf)
+{
+	size_t res;
+	char c;
+
+	res = iobuf_read(buf, &c, 1);
+	return res? c: EOF;
+
+}
+
+int iobuf_peek(IOBUF *buf)
+{
+	int c;
+	c = iobuf_getchar(buf);
+	if (c != EOF && buf->front_size != IOBUF_HALF_SIZE)
+		buf->front_size++;
+	return c;
+}
+
+size_t iobuf_getline(IOBUF *ibuf, char *obuf, size_t obuf_size)
+{
+	int c;
+	size_t res = 0;
+	while (res != obuf_size){
+		c = iobuf_getchar(ibuf);		
+		if (c == EOF)
+			break;
+		*obuf++ = c;
+		++res;
+		if (c == '\n')
+			break;
+	}
+
+	return res;
+}
+
+ssize_t iobuf_fwrite(IOBUF *buf, int fd)
+{
+	/* it's 3AM, I can't really figure out the best way to implement it right now */
+	/* I suppose the solution requires some temporary static buffer and even using
+	 * iobuf_read function with temporarily replacing infd with IOBUF_NOFILE */
 }

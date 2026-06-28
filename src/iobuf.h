@@ -31,7 +31,7 @@ size_t iobuf_getline(IOBUF *ibuf, char *obuf, size_t obuf_size);
 iobuf_res iobuf_putline(IOBUF *buf, char *str);
 
 /* write to file descriptor*/
-size_t iobuf_fwrite(IOBUF *buf, int fd); 
+ssize_t iobuf_fwrite(IOBUF *buf, int fd); 
 
 /*read from file descriptor*/
 ssize_t iobuf_fread(IOBUF *buf, int fd);
